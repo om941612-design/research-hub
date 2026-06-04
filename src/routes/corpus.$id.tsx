@@ -69,23 +69,38 @@ function CorpusView() {
 
 
 
-  async function send(e: React.FormEvent) {
-    e.preventDefault();
-    if (!input.trim() || !user) return;
-    const text = input.trim();
-    setInput("");
-    setSending(true);
-    const { error } = await supabase.from("messages").insert({
-      corpus_id: id, user_id: user.id, role: "user", content: text,
+async function send(e: React.FormEvent) {
+  e.preventDefault();
+  if (!input.trim() || !user) return;
+  const text = input.trim();
+  setInput("");
+  setSending(true);
+
+  await supabase.from("messages").insert({
+    corpus_id: id, user_id: user.id, role: "user", content: text,
+  });
+  qc.invalidateQueries({ queryKey: ["messages", id] });
+
+  try {
+    const webhookUrl = import.meta.env.VITE_QUERY_WEBHOOK_URL;
+    const res = await fetch(webhookUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ question: text, corpus_id: id, user_id: user.id, conversation_id: id }),
     });
-    if (error) { setSending(false); return toast.error(error.message); }
+    const data = await res.json();
     await supabase.from("messages").insert({
-      corpus_id: id, user_id: user.id, role: "assistant",
-      content: `Based on ${docs.length} document${docs.length === 1 ? "" : "s"} in this corpus, here's a placeholder response to: "${text}". Connect an AI model to enable real answers.`,
+      corpus_id: id, user_id: user.id, role: "assistant", content: data.answer ?? "No answer returned.",
     });
-    setSending(false);
-    qc.invalidateQueries({ queryKey: ["messages", id] });
+  } catch (err) {
+    await supabase.from("messages").insert({
+      corpus_id: id, user_id: user.id, role: "assistant", content: "Error contacting AI. Please try again.",
+    });
   }
+
+  setSending(false);
+  qc.invalidateQueries({ queryKey: ["messages", id] });
+}
 
   if (loading || !session) return null;
 
