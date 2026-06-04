@@ -23,8 +23,8 @@ function CorpusView() {
   const { session, user, loading } = useAuth();
   const navigate = useNavigate();
   const qc = useQueryClient();
-  const fileInput = useRef<HTMLInputElement>(null);
   const [input, setInput] = useState("");
+
   const [sending, setSending] = useState(false);
 
   useEffect(() => {
