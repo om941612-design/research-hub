@@ -14,7 +14,100 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      corpora: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      documents: {
+        Row: {
+          corpus_id: string
+          created_at: string
+          id: string
+          name: string
+          size_bytes: number
+          user_id: string
+        }
+        Insert: {
+          corpus_id: string
+          created_at?: string
+          id?: string
+          name: string
+          size_bytes?: number
+          user_id: string
+        }
+        Update: {
+          corpus_id?: string
+          created_at?: string
+          id?: string
+          name?: string
+          size_bytes?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "documents_corpus_id_fkey"
+            columns: ["corpus_id"]
+            isOneToOne: false
+            referencedRelation: "corpora"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      messages: {
+        Row: {
+          content: string
+          corpus_id: string
+          created_at: string
+          id: string
+          role: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          corpus_id: string
+          created_at?: string
+          id?: string
+          role: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          corpus_id?: string
+          created_at?: string
+          id?: string
+          role?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_corpus_id_fkey"
+            columns: ["corpus_id"]
+            isOneToOne: false
+            referencedRelation: "corpora"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
