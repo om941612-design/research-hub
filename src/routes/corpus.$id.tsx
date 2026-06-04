@@ -111,17 +111,7 @@ function CorpusView() {
           )}
         </aside>
 
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-foreground">{d.name}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {formatSize(d.size_bytes)}
-                    </p>
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
-        </aside>
+
 
         {/* Chat */}
         <section className="flex-1 flex flex-col rounded-2xl border border-border bg-card min-w-0">
