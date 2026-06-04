@@ -1,8 +1,8 @@
 {
   "buildCommand": "bun run build",
-  "outputDirectory": "dist",
+  "outputDirectory": "dist/client",
   "framework": null,
-  "routes": [
-    { "src": "/(.*)", "dest": "/server/index.mjs" }
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/index.html" }
   ]
 }
