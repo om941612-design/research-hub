@@ -106,24 +106,11 @@ function CorpusView() {
               {docs.length} document{docs.length === 1 ? "" : "s"}
             </p>
           </div>
-          <div className="p-4">
-            <input
-              ref={fileInput} type="file" multiple className="hidden"
-              onChange={handleUpload}
-            />
-            <Button className="w-full" onClick={() => fileInput.current?.click()}>
-              <Upload className="h-4 w-4" /> Upload documents
-            </Button>
-          </div>
-          <div className="flex-1 overflow-y-auto px-2 pb-3 space-y-0.5">
-            {docs.length === 0 ? (
-              <p className="text-sm text-muted-foreground text-center px-4 py-6">
-                No documents yet.
-              </p>
-            ) : (
-              docs.map((d) => (
-                <div key={d.id} className="flex items-start gap-2.5 px-3 py-2 rounded-lg hover:bg-secondary text-sm">
-                  <FileText className="h-4 w-4 mt-0.5 text-muted-foreground shrink-0" />
+          {user && (
+            <DocumentUploader corpusId={id} userId={user.id} docs={docs} />
+          )}
+        </aside>
+
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-foreground">{d.name}</p>
                     <p className="text-xs text-muted-foreground">
