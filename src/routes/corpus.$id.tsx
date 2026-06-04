@@ -66,21 +66,8 @@ function CorpusView() {
     },
   });
 
-  async function handleUpload(e: React.ChangeEvent<HTMLInputElement>) {
-    const files = e.target.files;
-    if (!files || !user) return;
-    const rows = Array.from(files).map((f) => ({
-      corpus_id: id,
-      user_id: user.id,
-      name: f.name,
-      size_bytes: f.size,
-    }));
-    const { error } = await supabase.from("documents").insert(rows);
-    if (error) return toast.error(error.message);
-    toast.success(`${rows.length} document${rows.length > 1 ? "s" : ""} added`);
-    qc.invalidateQueries({ queryKey: ["docs", id] });
-    if (fileInput.current) fileInput.current.value = "";
-  }
+
+
 
   async function send(e: React.FormEvent) {
     e.preventDefault();
