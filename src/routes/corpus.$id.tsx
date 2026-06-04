@@ -1,16 +1,17 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/use-auth";
 import { AppHeader } from "@/components/AppHeader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ArrowLeft, FileText, Upload, Send, Sparkles } from "lucide-react";
+import { ArrowLeft, Send, Sparkles } from "lucide-react";
 import { toast } from "sonner";
+import { DocumentUploader, type Doc } from "@/components/DocumentUploader";
 
-type Doc = { id: string; name: string; size_bytes: number; created_at: string };
 type Msg = { id: string; role: "user" | "assistant"; content: string; created_at: string };
+
 
 export const Route = createFileRoute("/corpus/$id")({
   head: () => ({ meta: [{ title: "Corpus — Research Assistant" }] }),
