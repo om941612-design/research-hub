@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { ArrowLeft, Send, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { DocumentUploader, type Doc } from "@/components/DocumentUploader";
+import { queryCorpus } from "@/lib/webhooks.functions";
 
 type Msg = { id: string; role: "user" | "assistant"; content: string; created_at: string };
 
@@ -82,15 +83,9 @@ async function send(e: React.FormEvent) {
   qc.invalidateQueries({ queryKey: ["messages", id] });
 
   try {
-    const webhookUrl = import.meta.env.VITE_QUERY_WEBHOOK_URL;
-    const res = await fetch(webhookUrl, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ question: text, corpus_id: id, user_id: user.id, conversation_id: id }),
-    });
-    const data = await res.json();
+    const result = await queryCorpus({ data: { corpusId: id, question: text } });
     await supabase.from("messages").insert({
-      corpus_id: id, user_id: user.id, role: "assistant", content: data.answer ?? "No answer returned.",
+      corpus_id: id, user_id: user.id, role: "assistant", content: result.answer,
     });
   } catch (err) {
     await supabase.from("messages").insert({

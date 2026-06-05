@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { ingestDocument } from "@/lib/webhooks.functions";
 
 export type DocStatus = "processing" | "ready" | "error";
 export type Doc = {
@@ -21,7 +22,16 @@ const ACCEPT_MIME = new Set([
   "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
   "text/plain",
 ]);
-const WEBHOOK_URL = import.meta.env.VITE_INGEST_WEBHOOK_URL as string | undefined;
+
+async function fileToBase64(file: File): Promise<string> {
+  const buf = new Uint8Array(await file.arrayBuffer());
+  let binary = "";
+  const chunk = 0x8000;
+  for (let i = 0; i < buf.length; i += chunk) {
+    binary += String.fromCharCode(...buf.subarray(i, i + chunk));
+  }
+  return btoa(binary);
+}
 
 function validate(file: File): string | null {
   const ext = file.name.split(".").pop()?.toLowerCase();
@@ -66,20 +76,19 @@ export function DocumentUploader({
     }
     qc.invalidateQueries({ queryKey: ["docs", corpusId] });
 
-    if (!WEBHOOK_URL) {
-      await supabase.from("documents").update({ status: "error" }).eq("id", data.id);
-      qc.invalidateQueries({ queryKey: ["docs", corpusId] });
-      toast.error("Ingest webhook URL is not configured.");
-      return;
-    }
+    qc.invalidateQueries({ queryKey: ["docs", corpusId] });
 
     try {
-      const fd = new FormData();
-      fd.append("file", file);
-      fd.append("corpus_id", corpusId);
-      fd.append("document_id", data.id);
-      const res = await fetch(WEBHOOK_URL, { method: "POST", body: fd });
-      if (!res.ok) throw new Error(`Webhook returned ${res.status}`);
+      const base64 = await fileToBase64(file);
+      await ingestDocument({
+        data: {
+          corpusId,
+          documentId: data.id,
+          filename: file.name,
+          contentType: file.type || "application/octet-stream",
+          base64,
+        },
+      });
       await supabase.from("documents").update({ status: "ready" }).eq("id", data.id);
     } catch (e) {
       await supabase.from("documents").update({ status: "error" }).eq("id", data.id);
