@@ -76,20 +76,19 @@ export function DocumentUploader({
     }
     qc.invalidateQueries({ queryKey: ["docs", corpusId] });
 
-    if (!WEBHOOK_URL) {
-      await supabase.from("documents").update({ status: "error" }).eq("id", data.id);
-      qc.invalidateQueries({ queryKey: ["docs", corpusId] });
-      toast.error("Ingest webhook URL is not configured.");
-      return;
-    }
+    qc.invalidateQueries({ queryKey: ["docs", corpusId] });
 
     try {
-      const fd = new FormData();
-      fd.append("file", file);
-      fd.append("corpus_id", corpusId);
-      fd.append("document_id", data.id);
-      const res = await fetch(WEBHOOK_URL, { method: "POST", body: fd });
-      if (!res.ok) throw new Error(`Webhook returned ${res.status}`);
+      const base64 = await fileToBase64(file);
+      await ingestDocument({
+        data: {
+          corpusId,
+          documentId: data.id,
+          filename: file.name,
+          contentType: file.type || "application/octet-stream",
+          base64,
+        },
+      });
       await supabase.from("documents").update({ status: "ready" }).eq("id", data.id);
     } catch (e) {
       await supabase.from("documents").update({ status: "error" }).eq("id", data.id);
