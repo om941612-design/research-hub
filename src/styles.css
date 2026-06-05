@@ -1,9 +1,7 @@
 @import "tailwindcss" source(none);
 @source "../src";
 @import "tw-animate-css";
-
 @custom-variant dark (&:is(.dark *));
-
 @theme inline {
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
@@ -38,39 +36,36 @@
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
 }
-
 :root {
-  --radius: 0.625rem;
-  /* Brand: navy #1E3A5F (primary), purple #4F46B8 (accent), white bg */
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.22 0.04 252);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.22 0.04 252);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.22 0.04 252);
-  --primary: oklch(0.34 0.07 252);              /* navy #1E3A5F */
+  --radius: 0.75rem;
+  --background: oklch(0.13 0.02 264);
+  --foreground: oklch(0.93 0.01 264);
+  --card: oklch(0.17 0.02 264);
+  --card-foreground: oklch(0.93 0.01 264);
+  --popover: oklch(0.17 0.02 264);
+  --popover-foreground: oklch(0.93 0.01 264);
+  --primary: oklch(0.6 0.2 264);
   --primary-foreground: oklch(0.99 0 0);
-  --secondary: oklch(0.97 0.01 252);
-  --secondary-foreground: oklch(0.34 0.07 252);
-  --muted: oklch(0.97 0.01 252);
-  --muted-foreground: oklch(0.5 0.02 252);
-  --accent: oklch(0.45 0.18 290);               /* purple #4F46B8 */
+  --secondary: oklch(0.22 0.03 264);
+  --secondary-foreground: oklch(0.85 0.01 264);
+  --muted: oklch(0.22 0.03 264);
+  --muted-foreground: oklch(0.55 0.02 264);
+  --accent: oklch(0.55 0.22 290);
   --accent-foreground: oklch(0.99 0 0);
   --destructive: oklch(0.58 0.22 27);
   --destructive-foreground: oklch(0.99 0 0);
-  --border: oklch(0.92 0.01 252);
-  --input: oklch(0.92 0.01 252);
-  --ring: oklch(0.45 0.18 290);
-  --sidebar: oklch(0.985 0.005 252);
-  --sidebar-foreground: oklch(0.22 0.04 252);
-  --sidebar-primary: oklch(0.34 0.07 252);
+  --border: oklch(0.25 0.03 264);
+  --input: oklch(0.22 0.03 264);
+  --ring: oklch(0.55 0.22 290);
+  --sidebar: oklch(0.15 0.02 264);
+  --sidebar-foreground: oklch(0.93 0.01 264);
+  --sidebar-primary: oklch(0.6 0.2 264);
   --sidebar-primary-foreground: oklch(0.99 0 0);
-  --sidebar-accent: oklch(0.95 0.02 290);
-  --sidebar-accent-foreground: oklch(0.34 0.07 252);
-  --sidebar-border: oklch(0.92 0.01 252);
-  --sidebar-ring: oklch(0.45 0.18 290);
+  --sidebar-accent: oklch(0.22 0.03 264);
+  --sidebar-accent-foreground: oklch(0.85 0.01 264);
+  --sidebar-border: oklch(0.25 0.03 264);
+  --sidebar-ring: oklch(0.55 0.22 290);
 }
-
 @layer base {
   * { border-color: var(--color-border); }
   html, body { font-family: var(--font-sans); }
