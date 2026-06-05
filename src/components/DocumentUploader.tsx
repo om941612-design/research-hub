@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { ingestDocument } from "@/lib/webhooks.functions";
 
 export type DocStatus = "processing" | "ready" | "error";
 export type Doc = {
@@ -21,7 +22,16 @@ const ACCEPT_MIME = new Set([
   "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
   "text/plain",
 ]);
-const WEBHOOK_URL = import.meta.env.VITE_INGEST_WEBHOOK_URL as string | undefined;
+
+async function fileToBase64(file: File): Promise<string> {
+  const buf = new Uint8Array(await file.arrayBuffer());
+  let binary = "";
+  const chunk = 0x8000;
+  for (let i = 0; i < buf.length; i += chunk) {
+    binary += String.fromCharCode(...buf.subarray(i, i + chunk));
+  }
+  return btoa(binary);
+}
 
 function validate(file: File): string | null {
   const ext = file.name.split(".").pop()?.toLowerCase();
