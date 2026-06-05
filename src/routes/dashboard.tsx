@@ -11,7 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter,
 } from "@/components/ui/dialog";
-import { FolderOpen, Plus, FileText } from "lucide-react";
+import { FolderOpen, Plus, FileText, Search, Moon, Sun } from "lucide-react";
 import { toast } from "sonner";
 
 type Corpus = {
@@ -34,6 +34,12 @@ function Dashboard() {
   const [name, setName] = useState("");
   const [desc, setDesc] = useState("");
   const [creating, setCreating] = useState(false);
+  const [search, setSearch] = useState("");
+  const [dark, setDark] = useState(true);
+
+  useEffect(() => {
+    document.documentElement.classList.toggle("dark", dark);
+  }, [dark]);
 
   useEffect(() => {
     if (!loading && !session) navigate({ to: "/auth", replace: true });
@@ -52,6 +58,25 @@ function Dashboard() {
     },
   });
 
+  const { data: allDocs = [] } = useQuery({
+    enabled: !!session,
+    queryKey: ["all-docs"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("documents").select("id, corpus_id");
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const docCountByCorpus = allDocs.reduce((acc: Record<string, number>, doc) => {
+    acc[doc.corpus_id] = (acc[doc.corpus_id] || 0) + 1;
+    return acc;
+  }, {});
+
+  const filtered = corpora.filter((c) =>
+    c.name.toLowerCase().includes(search.toLowerCase())
+  );
+
   async function createCorpus(e: React.FormEvent) {
     e.preventDefault();
     if (!user) return;
@@ -61,9 +86,7 @@ function Dashboard() {
       .insert({ name, description: desc || null, user_id: user.id });
     setCreating(false);
     if (error) return toast.error(error.message);
-    setName("");
-    setDesc("");
-    setOpen(false);
+    setName(""); setDesc(""); setOpen(false);
     qc.invalidateQueries({ queryKey: ["corpora"] });
   }
 
@@ -73,7 +96,7 @@ function Dashboard() {
     <div className="min-h-screen bg-background">
       <AppHeader email={user?.email} />
       <main className="max-w-6xl mx-auto px-6 py-10">
-        <div className="flex items-end justify-between mb-8">
+        <div className="flex items-end justify-between mb-6">
           <div>
             <h1 className="text-3xl font-semibold tracking-tight text-foreground">
               Your corpora
@@ -82,59 +105,67 @@ function Dashboard() {
               Project folders containing documents you can chat with.
             </p>
           </div>
-          <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger asChild>
-              <Button>
-                <Plus className="h-4 w-4" /> New corpus
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Create a corpus</DialogTitle>
-              </DialogHeader>
-              <form onSubmit={createCorpus} className="space-y-4">
-                <div className="space-y-1.5">
-                  <Label htmlFor="name">Name</Label>
-                  <Input
-                    id="name" value={name} onChange={(e) => setName(e.target.value)}
-                    required placeholder="e.g. Q4 Market Research"
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <Label htmlFor="desc">Description (optional)</Label>
-                  <Textarea
-                    id="desc" value={desc} onChange={(e) => setDesc(e.target.value)}
-                    placeholder="What's in this corpus?"
-                  />
-                </div>
-                <DialogFooter>
-                  <Button type="submit" disabled={creating}>Create</Button>
-                </DialogFooter>
-              </form>
-            </DialogContent>
-          </Dialog>
+          <div className="flex gap-2">
+            <Button variant="outline" size="icon" onClick={() => setDark(!dark)}>
+              {dark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+            </Button>
+            <Dialog open={open} onOpenChange={setOpen}>
+              <DialogTrigger asChild>
+                <Button><Plus className="h-4 w-4" /> New corpus</Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader><DialogTitle>Create a corpus</DialogTitle></DialogHeader>
+                <form onSubmit={createCorpus} className="space-y-4">
+                  <div className="space-y-1.5">
+                    <Label htmlFor="name">Name</Label>
+                    <Input id="name" value={name} onChange={(e) => setName(e.target.value)} required placeholder="e.g. Q4 Market Research" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="desc">Description (optional)</Label>
+                    <Textarea id="desc" value={desc} onChange={(e) => setDesc(e.target.value)} placeholder="What's in this corpus?" />
+                  </div>
+                  <DialogFooter>
+                    <Button type="submit" disabled={creating}>Create</Button>
+                  </DialogFooter>
+                </form>
+              </DialogContent>
+            </Dialog>
+          </div>
+        </div>
+
+        {/* Search bar */}
+        <div className="relative mb-6">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Search corpora..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="pl-9"
+          />
         </div>
 
         {isLoading ? (
           <p className="text-muted-foreground">Loading…</p>
-        ) : corpora.length === 0 ? (
-          <EmptyState onCreate={() => setOpen(true)} />
+        ) : filtered.length === 0 ? (
+          search ? <p className="text-muted-foreground">No corpora match "{search}"</p> : <EmptyState onCreate={() => setOpen(true)} />
         ) : (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {corpora.map((c) => (
-              <Link
-                key={c.id}
-                to="/corpus/$id"
-                params={{ id: c.id }}
+            {filtered.map((c) => (
+              <Link key={c.id} to="/corpus/$id" params={{ id: c.id }}
                 className="group rounded-2xl border border-border bg-card p-5 hover:border-accent/50 hover:shadow-md transition-all"
               >
                 <div className="flex items-center justify-between mb-3">
                   <div className="h-10 w-10 rounded-lg bg-secondary text-primary grid place-items-center group-hover:bg-accent/10 group-hover:text-accent transition-colors">
                     <FolderOpen className="h-5 w-5" />
                   </div>
-                  <span className="text-xs text-muted-foreground">
-                    {new Date(c.created_at).toLocaleDateString()}
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs bg-accent/20 text-accent px-2 py-0.5 rounded-full font-medium">
+                      {docCountByCorpus[c.id] || 0} docs
+                    </span>
+                    <span className="text-xs text-muted-foreground">
+                      {new Date(c.created_at).toLocaleDateString()}
+                    </span>
+                  </div>
                 </div>
                 <h3 className="font-semibold text-foreground line-clamp-1">{c.name}</h3>
                 <p className="text-sm text-muted-foreground mt-1 line-clamp-2 min-h-[2.5rem]">
@@ -159,9 +190,7 @@ function EmptyState({ onCreate }: { onCreate: () => void }) {
       <p className="text-sm text-muted-foreground mt-1 mb-5">
         Create your first project folder to upload documents and start chatting.
       </p>
-      <Button onClick={onCreate}>
-        <Plus className="h-4 w-4" /> New corpus
-      </Button>
+      <Button onClick={onCreate}><Plus className="h-4 w-4" /> New corpus</Button>
     </div>
   );
 }
