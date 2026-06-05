@@ -5,6 +5,9 @@ A RAG-based research assistant that lets you upload documents and chat with them
 ## Live App
 https://intel-quest-station.lovable.app
 
+## Presentation
+https://gamma.app/docs/Your-Personal-AI-Research-Assistant-vk0fa63tg9oah0o
+
 ## Test Credentials
 Use Google Sign-in on the login page.
 
