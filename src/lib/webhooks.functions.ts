@@ -1,8 +1,8 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
-const INGEST_URL = () => process.env.INGEST_WEBHOOK_URL;
-const QUERY_URL = () => process.env.QUERY_WEBHOOK_URL;
+const INGEST_URL = () => "https://omp.app.n8n.cloud/webhook/ingest-document";
+const QUERY_URL = () => "https://omp.app.n8n.cloud/webhook/query";
 const SHARED_SECRET = () => process.env.WEBHOOK_SHARED_SECRET;
 
 function authHeaders(): Record<string, string> {
