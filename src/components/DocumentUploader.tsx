@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { ingestDocument } from "@/lib/webhooks.functions";
 
 export type DocStatus = "processing" | "ready" | "error";
 export type Doc = {
@@ -79,16 +78,16 @@ export function DocumentUploader({
     qc.invalidateQueries({ queryKey: ["docs", corpusId] });
 
     try {
-      const base64 = await fileToBase64(file);
-      await ingestDocument({
-        data: {
-          corpusId,
-          documentId: data.id,
-          filename: file.name,
-          contentType: file.type || "application/octet-stream",
-          base64,
-        },
-      });
+     const fd = new FormData();
+fd.append("file", file);
+fd.append("corpus_id", corpusId);
+fd.append("document_id", data.id);
+fd.append("user_id", userId);
+const res = await fetch("https://omp.app.n8n.cloud/webhook/ingest-document", { 
+  method: "POST", 
+  body: fd 
+});
+if (!res.ok) throw new Error(`Webhook returned ${res.status}`);
       await supabase.from("documents").update({ status: "ready" }).eq("id", data.id);
     } catch (e) {
       await supabase.from("documents").update({ status: "error" }).eq("id", data.id);
