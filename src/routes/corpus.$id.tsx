@@ -168,7 +168,17 @@ function Bubble({ msg }: { msg: Msg }) {
             : "bg-secondary text-foreground rounded-bl-sm")
         }
       >
-        {isUser ? msg.content : <Markdown>{msg.content}</Markdown>}
+        {isUser ? msg.content : (
+          <div className="prose prose-sm max-w-none dark:prose-invert"
+            dangerouslySetInnerHTML={{ __html: msg.content
+              .replace(/### (.*)/g, '<h3 class="font-bold text-base mt-3 mb-1">$1</h3>')
+              .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+              .replace(/\* (.*)/g, '<li class="ml-4">$1</li>')
+              .replace(/\[Source:(.*?)\]/g, '<span class="text-xs text-muted-foreground">[Source:$1]</span>')
+              .replace(/\n/g, '<br/>')
+            }}
+          />
+        )}
       </div>
     </div>
   );
