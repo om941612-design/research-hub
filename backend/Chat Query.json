@@ -1,0 +1,192 @@
+{
+  "name": "Chat Query",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "query",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "b92cd29f-a7b7-4ea0-ad8c-0be7ffc899b6",
+      "name": "Webhook",
+      "webhookId": "a8f4a190-4ed5-4390-bba4-73b8aaebdb04"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.dify.ai/v1/chat-messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer app-FBsw4G7qIwTzuGfmVodPMUtv"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"query\": \"{{ $json.body.question }}\",\n  \"user\": \"{{ $json.body.user_id }}\",\n  \"conversation_id\": \"\",\n  \"response_mode\": \"blocking\",\n  \"inputs\": {}\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        208,
+        0
+      ],
+      "id": "e03ba4f0-3447-406d-8ff2-8a13be4508b3",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Loop over input items and add a new field called 'myNewField' to the JSON of each one\nconst difyResponse = $input.first().json;\nconst answer = difyResponse.answer || '';\nconst sources = difyResponse.metadata?.retriever_resources || [];\n\nconst citations = sources.map((s, i) => ({\n  index: i + 1,\n  filename: s.document_name,\n  page: s.segment_position || 1,\n  snippet: s.content?.slice(0, 200)\n}));\n\nreturn [{ json: {\n  answer,\n  citations,\n  conversation_id: difyResponse.conversation_id\n}}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        416,
+        0
+      ],
+      "id": "a175b8df-78fe-478a-b896-6f888a1791d7",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "tableId": "conversations",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "role",
+              "fieldValue": "assistant"
+            },
+            {
+              "fieldId": "content",
+              "fieldValue": "={{ $json.answer }}"
+            },
+            {
+              "fieldId": "citations",
+              "fieldValue": "={{ JSON.stringify($json.citations) }}"
+            },
+            {
+              "fieldId": "corpus_id",
+              "fieldValue": "={{ $('Webhook').first().json.body.corpus_id }}"
+            },
+            {
+              "fieldId": "user_id",
+              "fieldValue": "={{ $('Webhook').first().json.body.user_id }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        624,
+        128
+      ],
+      "id": "4184805d-b885-4211-b7f5-ea4aec498328",
+      "name": "Create a row",
+      "credentials": {
+        "supabaseApi": {
+          "id": "Y8pgAqFiKr9IdjcN",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        800,
+        16
+      ],
+      "id": "cdf14bc3-8abb-4418-8b5b-9599d3f52fed",
+      "name": "Respond to Webhook"
+    }
+  ],
+  "pinData": {
+    "HTTP Request": [
+      {
+        "json": {
+          "name": "First item",
+          "code": 1
+        }
+      },
+      {
+        "json": {
+          "name": "Second item",
+          "code": 2
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Create a row",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create a row": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "0f0d863c-ea72-4066-a863-b785bf1c9c62",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "7d94f1b0e3866f61d4bfe416718d179c3f802f55dd79c28a7f420da1c146e432"
+  },
+  "nodeGroups": [],
+  "id": "GkimDhzt6L3Cam47",
+  "tags": []
+}
