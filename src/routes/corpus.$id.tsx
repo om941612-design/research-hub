@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { ArrowLeft, Send, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { DocumentUploader, type Doc } from "@/components/DocumentUploader";
+import { queryCorpus } from "@/lib/webhooks.functions";
 
 type Msg = { id: string; role: "user" | "assistant"; content: string; created_at: string };
 
