@@ -168,7 +168,7 @@ function Bubble({ msg }: { msg: Msg }) {
             : "bg-secondary text-foreground rounded-bl-sm")
         }
       >
-        {msg.content}
+        {isUser ? msg.content : <Markdown>{msg.content}</Markdown>}
       </div>
     </div>
   );
